@@ -31,8 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
       final bool success = await authProvider.autoLogin(token);
 
       if (success) {
-        _navigateToHome();
-      } else {
+      //  _navigateToHome();
         _navigateToLogin();
       }
     } else {
@@ -95,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen> {
               SizedBox(height: 24),
               Text(
                 'TaskLink',
-                style: TextStyle(
+                style : TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,

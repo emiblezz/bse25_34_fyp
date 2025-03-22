@@ -270,4 +270,6 @@ class AuthProvider with ChangeNotifier {
           (route) => false,
     );
   }
+
+  updateUserProfile(AppUser updatedUser) {}
 }
