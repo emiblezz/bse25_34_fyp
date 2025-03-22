@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "659067062092",
+    "project_id": "bse25-de215",
+    "storage_bucket": "bse25-de215.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:659067062092:android:e2ed5c327195db28d471e9",
+        "android_client_info": {
+          "package_name": "com.example.bse25_34_fyp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnjaiKZR5c_DvIP1wKkOh6T00Eixygs3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

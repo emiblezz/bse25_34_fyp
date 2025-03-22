@@ -97,7 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (_formKey.currentState!.validate()) {
                         final success = await authProvider.register(
                           _emailController.text,
-                          _passwordController.text,
+                          _passwordController.text
                         );
                         if (success) {
                           Navigator.pushReplacement(

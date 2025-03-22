@@ -38,7 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo
                   Container(
                     height: 100,
                     width: 100,
@@ -76,8 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 32),
-
-                  // Email field
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -99,8 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   SizedBox(height: 16),
-
-                  // Password field
                   TextFormField(
                     controller: _passwordController,
                     decoration: InputDecoration(
@@ -131,8 +126,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   SizedBox(height: 8),
-
-                  // Forgot Password
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -146,8 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 16),
-
-                  // Error message
                   if (authProvider.error != null)
                     Container(
                       padding: EdgeInsets.symmetric(vertical: 8),
@@ -157,8 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         textAlign: TextAlign.center,
                       ),
                     ),
-
-                  // Login Button
                   ElevatedButton(
                     onPressed: authProvider.isLoading
                         ? null
@@ -174,46 +163,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                     },
                     child: authProvider.isLoading
-                        ? SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
-                      ),
-                    )
+                        ? CircularProgressIndicator(color: Colors.white)
                         : Text('LOGIN'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
                   ),
                   SizedBox(height: 16),
-
-                  // OR divider
-                  Row(
-                    children: [
-                      Expanded(child: Divider()),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'OR',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                      Expanded(child: Divider()),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-
-                  // Google Sign In Button
                   OutlinedButton.icon(
-                    icon: FaIcon(
-                      FontAwesomeIcons.google,
-                      color: Colors.red,
-                    ),
+                    icon: FaIcon(FontAwesomeIcons.google, color: Colors.red),
                     label: Text('Sign in with Google'),
                     onPressed: authProvider.isLoading
                         ? null
@@ -223,16 +178,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         authProvider.navigateToRoleBasedHome(context);
                       }
                     },
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
                   ),
                   SizedBox(height: 24),
-
-                  // Register
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

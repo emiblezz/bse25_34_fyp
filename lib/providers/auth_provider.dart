@@ -1,25 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_auth/firebase_auth.dart' as firebase;
-import "package:google_sign_in/google_sign_in.dart";
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
-import 'package:bse25_34_fyp/screens/job_seeker/job_seeker_home_screen.dart';
+import '../screens/job_seeker/job_seeker_home_screen.dart';
 import '../screens/recruiter/recruiter_home_screen.dart';
 import '../screens/admin/admin_home_screen.dart';
+import '../screens/auth/login_screen.dart';
 
 class AuthProvider with ChangeNotifier {
-  User? _user;
+  AppUser? _user;
   String? _token;
   bool _isLoading = false;
   String? _error;
 
-  User? get user => _user;
+  AppUser? get user => _user;
   bool get isLoggedIn => _token != null;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  final FirebaseAuth = firebase.FirebaseAuth.instance;
+  final _firebaseAuth = auth.FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn();
+
+  Future<bool> register(String email, String password) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // Firebase authentication
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (userCredential.user != null) {
+        // Registration successful
+        _isLoading = false;
+        _error = null;
+        notifyListeners();
+        return true;
+      } else {
+        _error = 'Registration failed';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 
   Future<bool> login(String email, String password) async {
     _isLoading = true;
@@ -28,30 +61,28 @@ class AuthProvider with ChangeNotifier {
 
     try {
       // Firebase authentication
-      final userCredential = await FirebaseAuth.signInWithEmailAndPassword(
+      final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       if (userCredential.user != null) {
-        // Get user token
         final idToken = await userCredential.user!.getIdToken();
 
-        // In a real app, you would fetch user data from your backend using this token
-        // Here we'll create dummy data for demonstration
-        _user = User(
-          id: 1,
+        // Fetch user data from your backend or set default values
+        _user = AppUser(
+          id: 1, // This would typically come from your backend
           name: userCredential.user!.displayName ?? 'User',
           email: userCredential.user!.email!,
           phone: userCredential.user!.phoneNumber ?? '',
-          roleId: 1,  // Default to job seeker
+          roleId: 1, // Default role - would typically come from your backend
           roleName: 'Job Seeker',
           profileStatus: 'Active',
           photoUrl: userCredential.user!.photoURL,
         );
         _token = idToken;
 
-        // Save token to shared preferences
+        // Save token to SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         prefs.setString('auth_token', _token!);
 
@@ -78,47 +109,37 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Trigger the Google Authentication flow
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
       if (googleUser == null) {
-        _error = 'Google sign in was canceled';
+        _error = 'Google sign-in was canceled';
         _isLoading = false;
         notifyListeners();
         return false;
       }
 
-      // Obtain the auth details from the Google sign in
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create a new credential for Firebase
-      final credential = firebase.GoogleAuthProvider.credential(
+      final credential = auth.GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Sign in to Firebase with the Google credential
-      final userCredential = await FirebaseAuth.signInWithCredential(credential);
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
 
       if (userCredential.user != null) {
-        // Get user token
         final idToken = await userCredential.user!.getIdToken();
 
-        // In a real app, you would fetch user data from your backend using this token
-        // Here we'll create dummy data for demonstration
-        _user = User(
+        _user = AppUser(
           id: 1,
           name: userCredential.user!.displayName ?? 'User',
           email: userCredential.user!.email!,
           phone: userCredential.user!.phoneNumber ?? '',
-          roleId: 1,  // Default to job seeker
+          roleId: 1,
           roleName: 'Job Seeker',
           profileStatus: 'Active',
           photoUrl: userCredential.user!.photoURL,
         );
         _token = idToken;
 
-        // Save token to shared preferences
         final prefs = await SharedPreferences.getInstance();
         prefs.setString('auth_token', _token!);
 
@@ -126,7 +147,7 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _error = 'Google sign in failed';
+        _error = 'Google sign-in failed';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -139,131 +160,84 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> register(String name, String email, String phone, String password, int roleId) async {
+  Future<bool> autoLogin(String savedToken) async {
     _isLoading = true;
-    _error = null;
     notifyListeners();
 
     try {
-      // Create user with Firebase
-      final userCredential = await FirebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      // Verify the token with Firebase
+      final currentUser = _firebaseAuth.currentUser;
 
-      if (userCredential.user != null) {
-        // Update user profile
-        await userCredential.user!.updateDisplayName(name);
-
-        // Get user token
-        final idToken = await userCredential.user!.getIdToken();
-
-        // In a real app, you would send this additional user data to your backend
-        _user = User(
+      if (currentUser != null) {
+        // Token is valid, fetch user info
+        // This would typically involve a backend call to get user details
+        _user = AppUser(
           id: 1,
-          name: name,
-          email: email,
-          phone: phone,
-          roleId: roleId,
-          roleName: roleId == 1 ? 'Job Seeker' : (roleId == 2 ? 'Recruiter' : 'Admin'),
+          name: currentUser.displayName ?? 'User',
+          email: currentUser.email!,
+          phone: currentUser.phoneNumber ?? '',
+          roleId: 1,
+          roleName: 'Job Seeker',
           profileStatus: 'Active',
-          photoUrl: null,
+          photoUrl: currentUser.photoURL,
         );
-        _token = idToken;
-
-        // Save token to shared preferences
-        final prefs = await SharedPreferences.getInstance();
-        prefs.setString('auth_token', _token!);
+        _token = savedToken;
 
         _isLoading = false;
         notifyListeners();
         return true;
       } else {
-        _error = 'Registration failed';
+        // Token is invalid or expired
+        _token = null;
+        _user = null;
+
+        final prefs = await SharedPreferences.getInstance();
+        prefs.remove('auth_token');
+
         _isLoading = false;
         notifyListeners();
         return false;
       }
     } catch (e) {
       _error = e.toString();
+      _token = null;
+      _user = null;
+
+      final prefs = await SharedPreferences.getInstance();
+      prefs.remove('auth_token');
+
       _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  Future<bool> resetPassword(String email) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      await FirebaseAuth.sendPasswordResetEmail(email: email);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> autoLogin(String token) async {
+  Future<void> logout(BuildContext context) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // In a real app, you would validate the token with your backend
-      // and fetch the user data
-
-      // For demonstration purposes, we'll just set dummy data
-      _token = token;
-      _user = User(
-        id: 1,
-        name: 'John Doe',
-        email: 'user@example.com',
-        phone: '1234567890',
-        roleId: 1,
-        roleName: 'Job Seeker',
-        profileStatus: 'Active',
-        photoUrl: null,
-      );
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      await logout();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<void> logout() async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      // Sign out from Firebase
-      await FirebaseAuth.signOut();
-      // Sign out from Google
+      await _firebaseAuth.signOut();
       await googleSignIn.signOut();
 
       _user = null;
       _token = null;
 
-      // Clear token from shared preferences
       final prefs = await SharedPreferences.getInstance();
       prefs.remove('auth_token');
-    } catch (e) {
-      print(e.toString());
-    }
 
-    _isLoading = false;
-    notifyListeners();
+      _isLoading = false;
+      notifyListeners();
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => LoginScreen()),
+            (route) => false,
+      );
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   void navigateToRoleBasedHome(BuildContext context) {
@@ -275,30 +249,25 @@ class AuthProvider with ChangeNotifier {
       return;
     }
 
+    Widget homeScreen;
     switch (_user!.roleId) {
-      case 1: // Job Seeker
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => JobSeekerHomeScreen()),
-        );
+      case 1:
+        homeScreen = JobSeekerHomeScreen();
         break;
-      case 2: // Recruiter
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => RecruiterHomeScreen()),
-        );
+      case 2:
+        homeScreen = RecruiterHomeScreen();
         break;
-      case 3: // Admin
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => AdminHomeScreen()),
-        );
+      case 3:
+        homeScreen = AdminHomeScreen();
         break;
       default:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => LoginScreen()),
-        );
+        homeScreen = LoginScreen();
     }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => homeScreen),
+          (route) => false,
+    );
   }
 }
