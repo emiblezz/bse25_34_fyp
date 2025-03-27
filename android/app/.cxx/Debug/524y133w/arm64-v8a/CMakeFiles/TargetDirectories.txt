@@ -1,0 +1,2 @@
+/home/doris/Desktop/bse25_34_fyp/android/app/.cxx/Debug/524y133w/arm64-v8a/CMakeFiles/edit_cache.dir
+/home/doris/Desktop/bse25_34_fyp/android/app/.cxx/Debug/524y133w/arm64-v8a/CMakeFiles/rebuild_cache.dir
